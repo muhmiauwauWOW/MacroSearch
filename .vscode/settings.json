@@ -178,7 +178,8 @@
         "PanelTemplates_GetSelectedTab",
         "MacroFrameMixin",
         "SearchBoxTemplate_OnLoad",
-        "SearchBoxTemplateClearButton_OnClick"
+        "SearchBoxTemplateClearButton_OnClick",
+        "MacroFrameTab2"
     ],
     "Lua.diagnostics.disable": [
         "undefined-field",
