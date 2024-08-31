@@ -1,10 +1,8 @@
-MacroSearch = LibStub("AceAddon-3.0"):NewAddon("MacroSearch");
+local addOnName = ...
+MacroSearch = {}
 local _ = LibStub("LibLodash-1"):Get()
 
 
-function MacroSearch:OnEnable()
-	--C_Timer.After(1, function() ShowMacroFrame(); end)
-end
 
 
 local addon1LoadedFrame = CreateFrame("Frame")
@@ -13,12 +11,14 @@ addon1LoadedFrame:SetScript("OnEvent", function(self, event, name, containsBindi
     if name == "Blizzard_MacroUI"then
 		MacroSearch:init()
     end
+
+	-- if name == addOnName then
+	-- 	C_Timer.After(1, function() ShowMacroFrame(); end)
+    -- end
 end)
 
 
 filterdMacros = {}
-
-
 
 
 function MacroSearch:init()
@@ -63,10 +63,13 @@ function MacroSearch:init()
 
 	MacroFrame.MacroSelector:SetSetupCallback(MacroFrameInitMacroButton);
 	self.updateFN = MacroFrame.Update
+
+	--C_Timer.After(1, function() MacroSearch:search("unho"); end)
+
 end
 
 function MacroSearch:search(str)
-	if string.len(str) == 0 then
+	if not str or string.len(str) == 0 then
 		MacroFrame.Update = self.updateFN
 		return 
 	end
@@ -74,32 +77,31 @@ function MacroSearch:search(str)
 	filterdMacros = {}
 	MacroFrame.Update = function() end
 
-	
+	local useAccountMacros = PanelTemplates_GetSelectedTab(MacroFrame) == 1;
+
 	local function getMacroData()
 		local values = {}
 		local i = 0
 		local name, icon
 
-		repeat
-			i = i + 1
-			name, icon = GetMacroInfo(i)
-			if(name) then 
+		local max  = useAccountMacros and MAX_ACCOUNT_MACROS or MAX_CHARACTER_MACROS;
+
+		for i = 1, max, 1 do
+			local mi = {GetMacroInfo(MacroFrame:GetMacroDataIndex(i))}
+			if(mi[2]) then 
 				table.insert(values,  {
 					index = i,
-					name = name,
-					fn =  {GetMacroInfo(i)}
+					fn =  mi
 				})
 			end
-		until(icon == nil)
-
+		end
 		return values
 	end
 
 	local macros = getMacroData()
 
-
 	_.forEach(macros, function(macro)
-		local find = string.find(string. lower(macro.name), string. lower(str))
+		local find = string.find(string.lower(macro.fn[1]), string.lower(str))
 		if find and (find > 0) then 
 			table.insert(filterdMacros, macro)
 		end
@@ -148,6 +150,27 @@ function MacroSearchSearchBarMixin:OnEnterPressed()
 		MacroSearch:search(self:GetText())
 	end
 end
+
+
+function MacroSearchSearchBarMixin:search()
+	local text = self:GetText();
+    local length = string.len(text);
+    if length == 0 then
+		MacroSearch:reset()
+	else
+		MacroSearch:search(self:GetText())
+	end
+end
+function MacroSearchSearchBarMixin:OnEnterPressed()
+	EditBox_ClearFocus(self);
+	self:search()
+end
+
+
+function MacroSearchSearchBarMixin:OnKeyUp()
+	self:search()
+end
+
 
 function MacroSearchSearchBarMixin:Reset()
 	self:SetText("");

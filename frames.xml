@@ -10,6 +10,7 @@
 		<Scripts>
 			<OnLoad method="OnLoad" />
 			<OnEnterPressed method="OnEnterPressed" />
+			<OnKeyUp method="OnKeyUp" />
 		</Scripts>
 	</EditBox>
 	
