@@ -1,0 +1,15 @@
+﻿## Interface: 110002
+## Title: MacroSearch
+## Notes: Adds a Searchbar to the macro frame
+## Version: @project-version@
+## Author: Muhmiauwau
+## X-Curse-Project-ID: 
+
+
+Libs\LibStub\LibStub.lua
+Libs\AceAddon-3.0\AceAddon-3.0.xml
+Libs\LibLodash\LibLodash.lua
+
+
+frames.xml
+MacroSearch.lua

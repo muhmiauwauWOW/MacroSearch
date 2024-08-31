@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\..\FrameXML\UI.xsd">
+
+	
+
+
+	
+	<EditBox name="MacroSearchSearchBarTemplate" autoFocus="false" historyLines="1" bytes="64" mixin="MacroSearchSearchBarMixin" inherits="SearchBoxTemplate" virtual="true">
+		<Size x="241" y="22"/>
+		<Scripts>
+			<OnLoad method="OnLoad" />
+			<OnEnterPressed method="OnEnterPressed" />
+		</Scripts>
+	</EditBox>
+	
+
+</Ui>
