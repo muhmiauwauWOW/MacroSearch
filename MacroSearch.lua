@@ -1,59 +1,35 @@
-local addOnName = ...
-MacroSearch = {}
 local _ = LibStub("LibLodash-1"):Get()
 
+MacroSearchMixin = {}
 
+function MacroSearchMixin:OnLoad()
 
+	self.filterdMacros = {}
+	self.updateFN = MacroFrame.Update
+	local offset = 22
 
-local addon1LoadedFrame = CreateFrame("Frame")
-addon1LoadedFrame:RegisterEvent("ADDON_LOADED")
-addon1LoadedFrame:SetScript("OnEvent", function(self, event, name, containsBindings)
-    if name == "Blizzard_MacroUI"then
-		MacroSearch:init()
-    end
-
-	-- if name == addOnName then
-	-- 	C_Timer.After(1, function() ShowMacroFrame(); end)
-    -- end
-end)
-
-
-filterdMacros = {}
-
-
-function MacroSearch:init()
-	self.SeachBar = CreateFrame("EditBox", nil, MacroFrame, "MacroSearchSearchBarTemplate")
-	self.SeachBar:SetPoint("TOPRIGHT", MacroFrame, "TOPRIGHT", -20, -28)
-	self.SeachBar:Show()
-
-	local offset = 20
-	MacroFrame.MacroSelector:SetPoint("TOPLEFT", 12, -66 - offset)
-	MacroFrame.MacroSelector:SetHeight(146 - offset)
-
-	MacroFrame.Inset:SetPoint("TOPLEFT", 4, -60 - offset)
-	MacroFrameTab1:SetPoint("TOPLEFT", 51, -28 - offset)
-
-	local tabFn = function()
-		MacroSearch:reset()
+	local function getMacroType()
+		return PanelTemplates_GetSelectedTab(MacroFrame) == 1 and "account" or "char"
 	end
 
-	MacroFrameTab1:HookScript("OnClick", tabFn)
-	MacroFrameTab2:HookScript("OnClick", tabFn)
-
-
+	self.macroType = getMacroType()
+	local tabFn = function()
+		self.macroType = getMacroType()
+		self:reset()
+	end
 	local function MacroFrameInitMacroButton(macroButton, selectionIndex, name, texture, body)
 		if name ~= nil then
-			if type(name) == "table" then 
-				macroButton:SetIconTexture(filterdMacros[macroButton.selectionIndex].fn[2]);
-		 		macroButton.Name:SetText(filterdMacros[macroButton.selectionIndex].fn[1]);
-				macroButton:Enable();
-				macroButton:SetSelectionIndex(filterdMacros[macroButton.selectionIndex].index)
-			else
-				macroButton:SetIconTexture(texture);
-				macroButton.Name:SetText(name);
-				macroButton:Enable();
+			local nname = name
+			if type(name) == "table" then
+				nname = self.filterdMacros[macroButton.selectionIndex].info[1]
+				texture = self.filterdMacros[macroButton.selectionIndex].info[2]
+				local nindex = self.filterdMacros[macroButton.selectionIndex].index
+				macroButton:SetSelectionIndex(nindex)
 			end
-			
+
+			macroButton:SetIconTexture(texture);
+			macroButton.Name:SetText(nname);
+			macroButton:Enable();
 		else
 			macroButton:SetIconTexture("");
 			macroButton.Name:SetText("");
@@ -61,73 +37,62 @@ function MacroSearch:init()
 		end
 	end
 
-	MacroFrame.MacroSelector:SetSetupCallback(MacroFrameInitMacroButton);
-	self.updateFN = MacroFrame.Update
-
-	--C_Timer.After(1, function() MacroSearch:search("unho"); end)
-
-end
-
-function MacroSearch:search(str)
-	if not str or string.len(str) == 0 then
-		MacroFrame.Update = self.updateFN
-		return 
-	end
-
-	filterdMacros = {}
-	MacroFrame.Update = function() end
-
-	local useAccountMacros = PanelTemplates_GetSelectedTab(MacroFrame) == 1;
-
-	local function getMacroData()
+	local function getMacroData(max, base)
 		local values = {}
-		local i = 0
-		local name, icon
-
-		local max  = useAccountMacros and MAX_ACCOUNT_MACROS or MAX_CHARACTER_MACROS;
-
 		for i = 1, max, 1 do
-			local mi = {GetMacroInfo(MacroFrame:GetMacroDataIndex(i))}
+			local mi = { GetMacroInfo(base + i) }
 			if(mi[2]) then 
-				table.insert(values,  {
-					index = i,
-					fn =  mi
-				})
+				table.insert(values, { index = i, info = mi })
 			end
 		end
 		return values
 	end
 
-	local macros = getMacroData()
+	local accountMacros = getMacroData(MAX_ACCOUNT_MACROS, 0)
+	local charMacros = getMacroData(MAX_CHARACTER_MACROS, MAX_ACCOUNT_MACROS)
 
-	_.forEach(macros, function(macro)
-		local find = string.find(string.lower(macro.fn[1]), string.lower(str))
-		if find and (find > 0) then 
-			table.insert(filterdMacros, macro)
-		end
+	self.macros = {
+		account = accountMacros,
+		char = charMacros
+	}
+
+	MacroFrame.MacroSelector:SetPoint("TOPLEFT", 12, -66 - offset)
+	MacroFrame.MacroSelector:SetHeight(146 - offset)
+	MacroFrame.Inset:SetPoint("TOPLEFT", 4, -60 - offset)
+	MacroFrameTab1:SetPoint("TOPLEFT", 51, -28 - offset)
+
+	MacroFrameTab1:HookScript("OnClick", tabFn)
+	MacroFrameTab2:HookScript("OnClick", tabFn)
+	MacroFrame.MacroSelector:SetSetupCallback(MacroFrameInitMacroButton);
+end
+
+function MacroSearchMixin:search(str)
+	MacroFrame.Update = function() end
+
+	local macros = self.macros[self.macroType]
+	
+	self.filterdMacros = _.filter(macros, function(macro)
+		local find = string.find(string.lower(macro.info[1]), string.lower(str))
+		return find and (find > 0)
 	end)
 
 	local function MacroFrameGetMacroInfo(selectionIndex)
-		return _.find(macros, function(macro)
-			return macro.index == selectionIndex
-		end)
+		return _.find(macros, function(macro) return macro.index == selectionIndex end)
 	end
 
 	local function MacroFrameGetNumMacros()
-		return #filterdMacros
+		return #self.filterdMacros
 	end
 
 	MacroFrame.MacroSelector:SetSelectionsDataProvider(MacroFrameGetMacroInfo, MacroFrameGetNumMacros);
 	MacroFrame:UpdateButtons();
 end
 
-function MacroSearch:reset()
+function MacroSearchMixin:reset()
 	MacroFrame.Update = self.updateFN
 	MacroFrame:Update()
-	MacroSearch.SeachBar:Reset()
+	self.SearchBar:Reset()
 end
-
-
 
 
 MacroSearchSearchBarMixin = {}
@@ -135,42 +100,26 @@ MacroSearchSearchBarMixin = {}
 function MacroSearchSearchBarMixin:OnLoad()
 	SearchBoxTemplate_OnLoad(self);
 	self.clearButton:HookScript("OnClick", function(btn)
-		MacroSearch:reset()
+		self:GetParent():reset()
 		SearchBoxTemplateClearButton_OnClick(btn);
 	end)
 end
-
-function MacroSearchSearchBarMixin:OnEnterPressed()
-	EditBox_ClearFocus(self);
-	local text = self:GetText();
-    local length = string.len(text);
-    if length == 0 then
-		MacroSearch:reset()
+function MacroSearchSearchBarMixin:search(text)
+    if string.len(text) == 0 then
+		self:GetParent():reset()
 	else
-		MacroSearch:search(self:GetText())
+		self:GetParent():search(text)
 	end
 end
 
-
-function MacroSearchSearchBarMixin:search()
-	local text = self:GetText();
-    local length = string.len(text);
-    if length == 0 then
-		MacroSearch:reset()
-	else
-		MacroSearch:search(self:GetText())
-	end
-end
 function MacroSearchSearchBarMixin:OnEnterPressed()
 	EditBox_ClearFocus(self);
-	self:search()
+	self:search(self:GetText())
 end
-
 
 function MacroSearchSearchBarMixin:OnKeyUp()
-	self:search()
+	self:search(self:GetText())
 end
-
 
 function MacroSearchSearchBarMixin:Reset()
 	self:SetText("");
