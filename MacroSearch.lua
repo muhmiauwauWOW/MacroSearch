@@ -3,7 +3,6 @@ local _ = LibStub("LibLodash-1"):Get()
 MacroSearchMixin = {}
 
 function MacroSearchMixin:OnLoad()
-
 	self.filterdMacros = {}
 	self.updateFN = MacroFrame.Update
 	local offset = 22
