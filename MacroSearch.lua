@@ -1,13 +1,50 @@
 local _ = LibStub("LibLodash-1"):Get()
 
+local L = {};
+local locale = GetLocale()
+
+if locale == "enUS" then
+    L["SettingsText1"] = "include macro text in search"
+elseif locale == "deDE" then
+    L["SettingsText1"] = "Makro-Text in der Suche einbeziehen"
+elseif locale == "frFR" then
+    L["SettingsText1"] = "inclure le texte des macros dans la recherche"
+elseif locale == "esES" then
+    L["SettingsText1"] = "incluir texto de macro en la búsqueda"
+elseif locale == "ruRU" then
+    L["SettingsText1"] = "включить текст макроса в поиск"
+elseif locale == "itIT" then
+    L["SettingsText1"] = "includere testo macro nella ricerca"
+elseif locale == "ptBR" then
+    L["SettingsText1"] = "incluir texto de macro na pesquisa"
+else
+    L["SettingsText1"] = "include macro text in search"
+end
+
+local defaultSearchMacroText = false
+
+SearchMacroText = nil
+
 MacroSearchMixin = {}
 
 function MacroSearchMixin:OnLoad()
+	self.searchString = nil
 	self.filterdMacros = {}
 	self.updateFN = MacroFrame.Update
+	self.findmode = "default"
 	local offset = 24
 	
+	local function defaultFind(macro) 
+		return string.find(string.lower(macro.info[1]), string.lower(self.searchString)); 
+	end
 
+	local function extendedFind(macro) 
+		return string.find(string.lower(macro.info[1]), string.lower(self.searchString)) or string.find(string.lower(macro.info[3]), string.lower(self.searchString)); 
+	end
+
+	self.findFn = { default = defaultFind, extended = extendedFind }
+
+	
 	local function getMacroType()
 		return PanelTemplates_GetSelectedTab(MacroFrame) == 1 and "account" or "char"
 	end
@@ -69,21 +106,35 @@ function MacroSearchMixin:OnLoad()
 	MacroFrameTab1:HookScript("OnClick", tabFn)
 	MacroFrameTab2:HookScript("OnClick", tabFn)
 	MacroFrame.MacroSelector:SetSetupCallback(MacroFrameInitMacroButton);
+
+	self.SettingsDropdown:Init()
+
+	-- SearchMacroText = nil
+end
+
+function MacroSearchMixin:OnShow()
+	self:setFindMode(SearchMacroText)
 end
 
 function MacroSearchMixin:OnHide()
 	self:reset()
 end
 
+function MacroSearchMixin:setFindMode(bool)
+	SearchMacroText = bool or defaultSearchMacroText
+	self.findmode = bool and "extended" or  "default"
+end
+function MacroSearchMixin:repeatSearch()
+	if not self.searchString then return end
+	self:search(self.searchString)
+end
+
 function MacroSearchMixin:search(str)
+	self.searchString = str
 	MacroFrame.Update = function() end
 
 	local macros = self.macros[self.macroType]
-	
-	self.filterdMacros = _.filter(macros, function(macro)
-		local find = string.find(string.lower(macro.info[1]), string.lower(str))
-		return find and (find > 0)
-	end)
+	self.filterdMacros = _.filter(macros, function(macro) return self.findFn[self.findmode](macro) end)
 
 	local function MacroFrameGetMacroInfo(selectionIndex)
 		return self.filterdMacros[selectionIndex]
@@ -94,19 +145,14 @@ function MacroSearchMixin:search(str)
 	end
 
 	MacroFrame.MacroSelector:SetSelectionsDataProvider(MacroFrameGetMacroInfo, MacroFrameGetNumMacros);
-
-	if MacroFrameGetNumMacros() == 0 then 
-		MacroSearchNoSearchResultsText:Show()
-	else
-		MacroSearchNoSearchResultsText:Hide()
-	end
-
+	MacroSearchNoSearchResultsText:SetShown(MacroFrameGetNumMacros() == 0)
 	MacroFrame:UpdateButtons();
 end
 
 function MacroSearchMixin:reset()
 	MacroFrame.Update = self.updateFN
 	MacroFrame:Update()
+	self.searchString = nil
 	self.SearchBar:Reset()
 end
 
@@ -139,4 +185,33 @@ end
 
 function MacroSearchSearchBarMixin:Reset()
 	self:SetText("");
+end
+
+
+
+MacroSearchSettingsButtonMixin = {}
+
+function MacroSearchSettingsButtonMixin:Init()
+
+
+	local function IsSelected()
+		return SearchMacroText
+	end
+
+	local function SetSelected()
+		MacroSearch:setFindMode(not IsSelected())
+		MacroSearch:repeatSearch() -- perform search
+	end
+
+	self:SetupMenu(function(dropdown, rootDescription)
+		rootDescription:CreateCheckbox(L["SettingsText1"], IsSelected, SetSelected);
+	end);
+end
+
+function MacroSearchSettingsButtonMixin:OnMouseDown()
+	self.Icon:AdjustPointsOffset(1, -1);
+end
+
+function MacroSearchSettingsButtonMixin:OnMouseUp(button, upInside)
+	self.Icon:AdjustPointsOffset(-1, 1);
 end

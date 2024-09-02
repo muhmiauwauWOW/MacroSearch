@@ -185,7 +185,9 @@
         "MacroHorizontalBarLeft",
         "MacroFrameText",
         "MacroFrameScrollFrame",
-        "MacroFrameTextBackground"
+        "MacroFrameTextBackground",
+        "QuestLogQuests_Update",
+        "QUEST_LOG_SHOW_OBJECTIVES"
     ],
     "Lua.diagnostics.disable": [
         "undefined-field",

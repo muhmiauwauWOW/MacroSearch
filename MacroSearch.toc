@@ -5,6 +5,7 @@
 ## Author: Muhmiauwau
 ## IconTexture: Interface\AddOns\MacroSearch\icon.png
 ## LoadOnDemand: 1
+## SavedVariables: SearchMacroText
 ## LoadWith: Blizzard_MacroUI
 ## X-Curse-Project-ID: 1094589
 
