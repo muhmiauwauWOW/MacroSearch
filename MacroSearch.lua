@@ -5,7 +5,7 @@ MacroSearchMixin = {}
 function MacroSearchMixin:OnLoad()
 	self.filterdMacros = {}
 	self.updateFN = MacroFrame.Update
-	local offset = 20
+	local offset = 24
 	
 
 	local function getMacroType()
@@ -57,11 +57,6 @@ function MacroSearchMixin:OnLoad()
 	}
 
 	MacroFrame.MacroSelector:SetPoint("TOPLEFT", 12, -66 - offset)
-	MacroFrame.Inset:SetPoint("TOPLEFT", 4, -60 - offset)
-	MacroFrameTab1:SetPoint("TOPLEFT", 51, -28 - offset)
-	MacroFrame.MacroSelector.ScrollBar:SetPoint("TOPRIGHT", -5, -5 - offset)
-
-
 	MacroHorizontalBarLeft:SetPoint("TOPLEFT", 2, -210 - offset)
 	MacroFrameSelectedMacroBackground:SetPoint("TOPLEFT", 5, -218 - offset)
 	MacroFrameTextBackground:SetPoint("TOPLEFT", 6, -289 - offset)
