@@ -1,6 +1,21 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\..\FrameXML\UI.xsd">
 
+
+	
+	<Frame name="MacroSearchNoSearchResultsText" parent="MacroFrame" hidden="true">
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString inherits="SystemFont_Med3" text="QUEST_LOG_NO_RESULTS" >
+					<Size x="250"/>
+					<Anchors>
+						<Anchor point="TOP"  relativeKey="$parent.MacroSelector" relativePoint="TOP" y="-30"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</Frame>
+
 	<Frame name="MacroSearchTemplate" parent="MacroFrame" mixin="MacroSearchMixin" >
 		<Size x="241" y="22"/>
 		<Anchors>
@@ -8,7 +23,7 @@
 		</Anchors>
 		<Frames>
 		<EditBox name="MacroSearchSearchBarTemplate" parentKey="SearchBar" autoFocus="false" historyLines="1" bytes="64" mixin="MacroSearchSearchBarMixin" inherits="SearchBoxTemplate">
-				<Size x="241" y="22"/>
+				<Size x="241" y="20"/>
 				<Anchors>
 					<Anchor point="LEFT"  x="0" />
 				</Anchors>
@@ -21,6 +36,7 @@
 		</Frames>
 		<Scripts>
 			<OnLoad method="OnLoad"/>
+			<OnHide method="OnHide"/>
 		</Scripts>
 	</Frame>
 

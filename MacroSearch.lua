@@ -5,7 +5,8 @@ MacroSearchMixin = {}
 function MacroSearchMixin:OnLoad()
 	self.filterdMacros = {}
 	self.updateFN = MacroFrame.Update
-	local offset = 22
+	local offset = 20
+	
 
 	local function getMacroType()
 		return PanelTemplates_GetSelectedTab(MacroFrame) == 1 and "account" or "char"
@@ -56,13 +57,27 @@ function MacroSearchMixin:OnLoad()
 	}
 
 	MacroFrame.MacroSelector:SetPoint("TOPLEFT", 12, -66 - offset)
-	MacroFrame.MacroSelector:SetHeight(146 - offset)
 	MacroFrame.Inset:SetPoint("TOPLEFT", 4, -60 - offset)
 	MacroFrameTab1:SetPoint("TOPLEFT", 51, -28 - offset)
+	MacroFrame.MacroSelector.ScrollBar:SetPoint("TOPRIGHT", -5, -5 - offset)
+
+
+	MacroHorizontalBarLeft:SetPoint("TOPLEFT", 2, -210 - offset)
+	MacroFrameSelectedMacroBackground:SetPoint("TOPLEFT", 5, -218 - offset)
+	MacroFrameTextBackground:SetPoint("TOPLEFT", 6, -289 - offset)
+
+	MacroFrame:SetHeight(MacroFrame:GetHeight() + offset)
+
+	MacroSearchNoSearchResultsText:SetAllPoints(MacroFrame.MacroSelector.ScrollBox)
+
 
 	MacroFrameTab1:HookScript("OnClick", tabFn)
 	MacroFrameTab2:HookScript("OnClick", tabFn)
 	MacroFrame.MacroSelector:SetSetupCallback(MacroFrameInitMacroButton);
+end
+
+function MacroSearchMixin:OnHide()
+	self:reset()
 end
 
 function MacroSearchMixin:search(str)
@@ -76,7 +91,7 @@ function MacroSearchMixin:search(str)
 	end)
 
 	local function MacroFrameGetMacroInfo(selectionIndex)
-		return _.find(macros, function(macro) return macro.index == selectionIndex end)
+		return self.filterdMacros[selectionIndex]
 	end
 
 	local function MacroFrameGetNumMacros()
@@ -84,6 +99,13 @@ function MacroSearchMixin:search(str)
 	end
 
 	MacroFrame.MacroSelector:SetSelectionsDataProvider(MacroFrameGetMacroInfo, MacroFrameGetNumMacros);
+
+	if MacroFrameGetNumMacros() == 0 then 
+		MacroSearchNoSearchResultsText:Show()
+	else
+		MacroSearchNoSearchResultsText:Hide()
+	end
+
 	MacroFrame:UpdateButtons();
 end
 
