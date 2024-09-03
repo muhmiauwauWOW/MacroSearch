@@ -62,6 +62,7 @@ function MacroSearchMixin:OnLoad()
 				texture = self.filterdMacros[macroButton.selectionIndex].info[2]
 				local nindex = self.filterdMacros[macroButton.selectionIndex].index
 				macroButton:SetSelectionIndex(nindex)
+				macroButton.GetElementData = function() return nindex end -- fix drag and drop 
 			end
 
 			macroButton:SetIconTexture(texture);
@@ -108,8 +109,6 @@ function MacroSearchMixin:OnLoad()
 	MacroFrame.MacroSelector:SetSetupCallback(MacroFrameInitMacroButton);
 
 	self.SettingsDropdown:Init()
-
-	-- SearchMacroText = nil
 end
 
 function MacroSearchMixin:OnShow()
