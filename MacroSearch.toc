@@ -8,6 +8,8 @@
 ## SavedVariables: SearchMacroText
 ## LoadWith: Blizzard_MacroUI
 ## X-Curse-Project-ID: 1094589
+## X-Wago-ID: nGvprr6x
+## X-WoWI-ID: 26832
 
 
 Libs\LibStub\LibStub.lua
@@ -15,4 +17,3 @@ Libs\LibLodash\LibLodash.lua
 
 MacroSearch.lua
 frames.xml
-
