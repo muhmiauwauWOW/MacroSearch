@@ -187,7 +187,8 @@
         "MacroFrameScrollFrame",
         "MacroFrameTextBackground",
         "QuestLogQuests_Update",
-        "QUEST_LOG_SHOW_OBJECTIVES"
+        "QUEST_LOG_SHOW_OBJECTIVES",
+        "UIPanelCloseButton_OnClick"
     ],
     "Lua.diagnostics.disable": [
         "undefined-field",

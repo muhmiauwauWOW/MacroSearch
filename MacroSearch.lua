@@ -91,7 +91,17 @@ function MacroSearchMixin:OnLoad()
 	self.macroType = "account"
 	
 	self:fillMacroData(self.macroType)
-	self:SetScript("OnEvent", function()
+	self:SetScript("OnEvent", function(self, event)
+		if event == "PLAYER_REGEN_DISABLED" then
+			self.SearchBar:Disable()
+			self:reset()
+			return
+		end
+
+		if event == "PLAYER_REGEN_ENABLED" then
+			self.SearchBar:Enable()
+			return
+		end
 		self.macroType = getMacroType()
 		self:fillMacroData(self.macroType)
 		self:repeatSearch()
@@ -133,11 +143,22 @@ end
 
 function MacroSearchMixin:OnShow()
 	self:RegisterEvent("UPDATE_MACROS");
+	self:RegisterEvent("PLAYER_REGEN_DISABLED")
+	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	self:setFindMode(SearchMacroText)
+
+	local affectingCombat = UnitAffectingCombat("player")
+	if affectingCombat then
+		self.SearchBar:Disable()
+	else
+		self.SearchBar:Enable()
+	end
 end
 
 function MacroSearchMixin:OnHide()
 	self:UnregisterEvent("UPDATE_MACROS");
+	self:RegisterEvent("PLAYER_REGEN_DISABLED")
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	self:reset()
 end
 
@@ -205,6 +226,20 @@ end
 
 function MacroSearchSearchBarMixin:Reset()
 	self:SetText("");
+end
+
+
+
+function MacroSearchSearchBarMixin:OnEnter()
+	if self:IsEnabled() then return end
+
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+	GameTooltip:AddLine("Search is disabled in combat");
+	GameTooltip:Show();
+end
+
+function MacroSearchSearchBarMixin:OnLeave()
+	GameTooltip:Hide();
 end
 
 

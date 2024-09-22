@@ -24,7 +24,7 @@
 			<Anchor point="RIGHT" x="-10" />
 		</Anchors>
 		<Frames>
-			<EditBox name="MacroSearchSearchBarTemplate" parentKey="SearchBar" autoFocus="false" historyLines="1" bytes="64" mixin="MacroSearchSearchBarMixin" inherits="SearchBoxTemplate">
+			<EditBox parentKey="SearchBar" autoFocus="false" historyLines="1" bytes="64" mixin="MacroSearchSearchBarMixin" inherits="SearchBoxTemplate">
 				<Size y="20"/>
 				<Anchors>
 					<Anchor point="LEFT" x="0" />
@@ -34,6 +34,8 @@
 					<OnLoad method="OnLoad" />
 					<OnEnterPressed method="OnEnterPressed" />
 					<OnKeyUp method="OnKeyUp" />
+					<OnEnter method="OnEnter" />
+					<OnLeave method="OnLeave" />
 				</Scripts>
 			</EditBox>
 			<DropdownButton parentKey="SettingsDropdown" mixin="MacroSearchSettingsButtonMixin">
