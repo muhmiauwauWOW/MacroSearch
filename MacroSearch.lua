@@ -195,6 +195,7 @@ function MacroSearchMixin:reset()
 	MacroFrame:Update()
 	self.searchString = nil
 	self.SearchBar:Reset()
+	MacroSearchNoSearchResultsText:Hide()
 end
 
 

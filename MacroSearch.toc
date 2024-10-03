@@ -1,4 +1,4 @@
-﻿## Interface: 110002
+﻿## Interface: 110005
 ## Title: MacroSearch
 ## Notes: Adds a Searchbar to the macro frame
 ## Version: @project-version@
