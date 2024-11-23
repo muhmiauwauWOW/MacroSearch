@@ -26,7 +26,7 @@ local defaultSearchMacroText = false
 SearchMacroText = nil
 
 
-
+MACROSEARCH_NO_RESULTS = QUEST_LOG_NO_RESULTS or "No Results"
 
 
 MacroSearchMixin = {}
@@ -118,6 +118,16 @@ function MacroSearchMixin:OnLoad()
 	MacroFrameTab1:HookScript("OnClick", tabFn)
 	MacroFrameTab2:HookScript("OnClick", tabFn)
 	MacroFrame.MacroSelector:SetSetupCallback(MacroFrameInitMacroButton);
+
+
+
+	self.SettingsDropdown.Icon:SetTexture("Interface/AddOns/MacroSearch/questlogframe.blp")
+	self.SettingsDropdown.Icon:SetSize(15, 16)
+	self.SettingsDropdown.Icon:SetTexCoord(0.21484375, 0.244140625, 0.11328125, 0.14453125)
+
+	self.SettingsDropdown.IconHighhlight:SetTexture("Interface/AddOns/MacroSearch/questlogframe.blp")
+	self.SettingsDropdown.IconHighhlight:SetSize(15, 16)
+	self.SettingsDropdown.IconHighhlight:SetTexCoord(0.21484375, 0.244140625, 0.11328125, 0.14453125)
 
 	self.SettingsDropdown:Init()
 end

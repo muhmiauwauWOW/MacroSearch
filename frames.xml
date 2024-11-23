@@ -6,7 +6,7 @@
 	<Frame name="MacroSearchNoSearchResultsText" parent="MacroFrame" hidden="true">
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString inherits="SystemFont_Med3" text="QUEST_LOG_NO_RESULTS" >
+				<FontString inherits="SystemFont_Med3" text="MACROSEARCH_NO_RESULTS" >
 					<Size x="250"/>
 					<Anchors>
 						<Anchor point="TOP"  relativeKey="$parent.MacroSelector" relativePoint="TOP" y="-30"/>
@@ -45,14 +45,14 @@
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<Texture parentKey="Icon" atlas="questlog-icon-setting" useAtlasSize="true">
+						<Texture parentKey="Icon" >
 							<Anchors>
 								<Anchor point="CENTER"/>
 							</Anchors>
 						</Texture>
 					</Layer>
 					<Layer level="HIGHLIGHT">
-						<Texture atlas="questlog-icon-setting" useAtlasSize="true" inherits="QuestLogHighlightTextureTemplate">
+						<Texture parentKey="IconHighhlight" alphaMode="ADD" alpha="0.4" >
 							<Anchors>
 								<Anchor point="CENTER" relativeKey="$parent.Icon"/>
 							</Anchors>

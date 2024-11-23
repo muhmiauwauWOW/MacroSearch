@@ -1,4 +1,4 @@
-﻿## Interface: 110005
+﻿## Interface: 110005, 11505
 ## Title: MacroSearch
 ## Notes: Adds a Searchbar to the macro frame
 ## Version: @project-version@
@@ -12,8 +12,8 @@
 ## X-WoWI-ID: 26832
 
 
-Libs\LibStub\LibStub.lua
-Libs\LibLodash\LibLodash.lua
+Libs/LibStub/LibStub.lua
+Libs/LibLodash/LibLodash.lua
 
 MacroSearch.lua
 frames.xml
