@@ -31,6 +31,11 @@ MACROSEARCH_NO_RESULTS = QUEST_LOG_NO_RESULTS or "No Results"
 
 MacroSearchMixin = {}
 
+-- Utility: Safe string.lower (handles nil)
+local function safeLower(str)
+	return type(str) == "string" and string.lower(str) or ""
+end
+
 function MacroSearchMixin:OnLoad()
 	self.searchString = nil
 	self.filterdMacros = {}
@@ -41,12 +46,16 @@ function MacroSearchMixin:OnLoad()
 	self.macros = {}
 	self:fillMacroData()
 	
-	local function defaultFind(macro) 
-		return string.find(string.lower(macro.info[1]), string.lower(self.searchString)); 
+	-- Improved search functions with error handling
+	local function defaultFind(macro)
+		if not macro or not macro.info or not macro.info[1] then return false end
+		return string.find(safeLower(macro.info[1]), safeLower(self.searchString), 1, true)
 	end
 
-	local function extendedFind(macro) 
-		return string.find(string.lower(macro.info[1]), string.lower(self.searchString)) or string.find(string.lower(macro.info[3]), string.lower(self.searchString)); 
+	local function extendedFind(macro)
+		if not macro or not macro.info then return false end
+		return string.find(safeLower(macro.info[1]), safeLower(self.searchString), 1, true)
+			or string.find(safeLower(macro.info[3]), safeLower(self.searchString), 1, true)
 	end
 
 	self.findFn = { default = defaultFind, extended = extendedFind }
@@ -135,16 +144,16 @@ end
 function MacroSearchMixin:fillMacroData(macroType)
 	local function getMacroData(max, base)
 		local values = {}
-		for i = 1, max, 1 do
+		for i = 1, max do
 			local mi = { GetMacroInfo(base + i) }
-			if(mi[2]) then 
+			if mi[2] and mi[1] then -- Error handling: only valid macros
 				table.insert(values, { index = i, info = mi })
 			end
 		end
 		return values
 	end
 
-	if (macroType == "account") then 
+	if macroType == "account" then 
 		self.macros = getMacroData(MAX_ACCOUNT_MACROS, 0)
 	else 
 		self.macros = getMacroData(MAX_CHARACTER_MACROS, MAX_ACCOUNT_MACROS)
@@ -152,17 +161,19 @@ function MacroSearchMixin:fillMacroData(macroType)
 end
 
 function MacroSearchMixin:OnShow()
-	self:RegisterEvent("UPDATE_MACROS");
+	self:RegisterEvent("UPDATE_MACROS")
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	self:setFindMode(SearchMacroText)
 
 	local affectingCombat = UnitAffectingCombat("player")
 	if affectingCombat then
-		self.SearchBar:Disable()
+		self.SearchBar:Enable() -- Allow searching in combat
 	else
 		self.SearchBar:Enable()
 	end
+
+	self:fillMacroData(self.macroType)
 end
 
 function MacroSearchMixin:OnHide()
@@ -182,10 +193,18 @@ function MacroSearchMixin:repeatSearch()
 end
 
 function MacroSearchMixin:search(str)
-	self.searchString = str
+	self:fillMacroData(self.macroType)
+	self.searchString = str or ""
 	MacroFrame.Update = function() end
 
-	self.filterdMacros = _.filter(self.macros, function(macro) return self.findFn[self.findmode](macro) end)
+	-- Handle empty macro list
+	if not self.macros or #self.macros == 0 then
+		self.filterdMacros = {}
+	else
+		self.filterdMacros = _.filter(self.macros, function(macro)
+			return self.findFn[self.findmode](macro)
+		end)
+	end
 	
 	local function MacroFrameGetMacroInfo(selectionIndex)
 		return self.filterdMacros[selectionIndex]
@@ -195,9 +214,9 @@ function MacroSearchMixin:search(str)
 		return #self.filterdMacros
 	end
 
-	MacroFrame.MacroSelector:SetSelectionsDataProvider(MacroFrameGetMacroInfo, MacroFrameGetNumMacros);
+	MacroFrame.MacroSelector:SetSelectionsDataProvider(MacroFrameGetMacroInfo, MacroFrameGetNumMacros)
 	MacroSearchNoSearchResultsText:SetShown(MacroFrameGetNumMacros() == 0)
-	MacroFrame:UpdateButtons();
+	MacroFrame:UpdateButtons()
 end
 
 function MacroSearchMixin:reset()
