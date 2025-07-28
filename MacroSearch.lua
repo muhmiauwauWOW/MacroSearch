@@ -117,11 +117,15 @@ function MacroSearchMixin:OnLoad()
 	end)
 
 	local tabFn = function()
-		self:reset()
 		local mt = getMacroType()
 		if mt == self.macroType then return end
 		self.macroType = mt
 		self:fillMacroData(self.macroType)
+		if self.searchString and self.searchString ~= "" then
+			self:search(self.searchString)
+		else
+			self:search("")
+		end
 	end
 
 	MacroFrameTab1:HookScript("OnClick", tabFn)
