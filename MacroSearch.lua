@@ -9,14 +9,22 @@ elseif locale == "deDE" then
     L["SettingsText1"] = "Makro-Text in der Suche einbeziehen"
 elseif locale == "frFR" then
     L["SettingsText1"] = "inclure le texte des macros dans la recherche"
-elseif locale == "esES" then
+elseif locale == "esES" or locale == "esMX" then
     L["SettingsText1"] = "incluir texto de macro en la búsqueda"
 elseif locale == "ruRU" then
     L["SettingsText1"] = "включить текст макроса в поиск"
 elseif locale == "itIT" then
     L["SettingsText1"] = "includere testo macro nella ricerca"
-elseif locale == "ptBR" then
+elseif locale == "ptBR" or locale == "ptPT" then
     L["SettingsText1"] = "incluir texto de macro na pesquisa"
+elseif locale == "koKR" then
+    L["SettingsText1"] = "매크로 텍스트를 검색에 포함"
+elseif locale == "zhCN" then
+    L["SettingsText1"] = "在搜索中包含宏文本"
+elseif locale == "zhTW" then
+    L["SettingsText1"] = "在搜尋中包含巨集文字"
+elseif locale == "enGB" then
+    L["SettingsText1"] = "include macro text in search"
 else
     L["SettingsText1"] = "include macro text in search"
 end
@@ -31,6 +39,11 @@ MACROSEARCH_NO_RESULTS = QUEST_LOG_NO_RESULTS or "No Results"
 
 MacroSearchMixin = {}
 
+-- Utility: Safe string.lower (handles nil)
+local function safeLower(str)
+	return type(str) == "string" and string.lower(str) or ""
+end
+
 function MacroSearchMixin:OnLoad()
 	self.searchString = nil
 	self.filterdMacros = {}
@@ -40,18 +53,19 @@ function MacroSearchMixin:OnLoad()
 
 	self.macros = {}
 	self:fillMacroData()
-	
-	local function defaultFind(macro) 
-		return string.find(string.lower(macro.info[1]), string.lower(self.searchString)); 
+
+	local function defaultFind(macro)
+		if not macro or not macro.info or not macro.info[1] then return false end
+		return string.find(safeLower(macro.info[1]), safeLower(self.searchString), 1, true)
 	end
 
-	local function extendedFind(macro) 
-		return string.find(string.lower(macro.info[1]), string.lower(self.searchString)) or string.find(string.lower(macro.info[3]), string.lower(self.searchString)); 
+	local function extendedFind(macro)
+		if not macro or not macro.info then return false end
+		return string.find(safeLower(macro.info[1]), safeLower(self.searchString), 1, true)
+			or string.find(safeLower(macro.info[3]), safeLower(self.searchString), 1, true)
 	end
 
 	self.findFn = { default = defaultFind, extended = extendedFind }
-
-	
 
 	local function MacroFrameInitMacroButton(macroButton, selectionIndex, name, texture, body)
 		if name ~= nil then
@@ -61,16 +75,15 @@ function MacroSearchMixin:OnLoad()
 				texture = self.filterdMacros[macroButton.selectionIndex].info[2]
 				local nindex = self.filterdMacros[macroButton.selectionIndex].index
 				macroButton:SetSelectionIndex(nindex)
-				macroButton.GetElementData = function() return nindex end -- fix drag and drop 
+				macroButton.GetElementData = function() return nindex end
 			end
-
-			macroButton:SetIconTexture(texture);
-			macroButton.Name:SetText(nname);
-			macroButton:Enable();
+			macroButton:SetIconTexture(texture)
+			macroButton.Name:SetText(nname)
+			macroButton:Enable()
 		else
-			macroButton:SetIconTexture("");
-			macroButton.Name:SetText("");
-			macroButton:Disable();
+			macroButton:SetIconTexture("")
+			macroButton.Name:SetText("")
+			macroButton:Disable()
 		end
 	end
 
@@ -81,15 +94,11 @@ function MacroSearchMixin:OnLoad()
 	MacroFrame:SetHeight(MacroFrame:GetHeight() + offset)
 	MacroSearchNoSearchResultsText:SetAllPoints(MacroFrame.MacroSelector.ScrollBox)
 
-
-
-	
 	local function getMacroType()
 		return PanelTemplates_GetSelectedTab(MacroFrame) == 1 and "account" or "char"
 	end
 
 	self.macroType = "account"
-	
 	self:fillMacroData(self.macroType)
 	self:SetScript("OnEvent", function(self, event)
 		if event == "PLAYER_REGEN_DISABLED" then
@@ -97,7 +106,6 @@ function MacroSearchMixin:OnLoad()
 			self:reset()
 			return
 		end
-
 		if event == "PLAYER_REGEN_ENABLED" then
 			self.SearchBar:Enable()
 			return
@@ -108,43 +116,42 @@ function MacroSearchMixin:OnLoad()
 	end)
 
 	local tabFn = function()
-		self:reset()
 		local mt = getMacroType()
 		if mt == self.macroType then return end
 		self.macroType = mt
 		self:fillMacroData(self.macroType)
+		self:search(self.searchString or "")
 	end
 
 	MacroFrameTab1:HookScript("OnClick", tabFn)
 	MacroFrameTab2:HookScript("OnClick", tabFn)
-	MacroFrame.MacroSelector:SetSetupCallback(MacroFrameInitMacroButton);
-
-
+	MacroFrame.MacroSelector:SetSetupCallback(MacroFrameInitMacroButton)
 
 	self.SettingsDropdown.Icon:SetTexture("Interface/AddOns/MacroSearch/questlogframe.blp")
 	self.SettingsDropdown.Icon:SetSize(15, 16)
 	self.SettingsDropdown.Icon:SetTexCoord(0.21484375, 0.244140625, 0.11328125, 0.14453125)
-
 	self.SettingsDropdown.IconHighhlight:SetTexture("Interface/AddOns/MacroSearch/questlogframe.blp")
 	self.SettingsDropdown.IconHighhlight:SetSize(15, 16)
 	self.SettingsDropdown.IconHighhlight:SetTexCoord(0.21484375, 0.244140625, 0.11328125, 0.14453125)
-
 	self.SettingsDropdown:Init()
 end
 
 function MacroSearchMixin:fillMacroData(macroType)
 	local function getMacroData(max, base)
 		local values = {}
-		for i = 1, max, 1 do
+		for i = 1, max do
 			local mi = { GetMacroInfo(base + i) }
-			if(mi[2]) then 
-				table.insert(values, { index = i, info = mi })
+			if _.size(mi) > 1 and mi[2] and mi[1] then
+				_.push(values, { index = i, info = mi })
 			end
 		end
+		-- Remove duplicates and sort by macro name
+		values = _.uniq(values, function(m) return m.info[1] end)
+		values = _.sortBy(values, function(m) return m.info[1] end)
 		return values
 	end
 
-	if (macroType == "account") then 
+	if macroType == "account" then 
 		self.macros = getMacroData(MAX_ACCOUNT_MACROS, 0)
 	else 
 		self.macros = getMacroData(MAX_CHARACTER_MACROS, MAX_ACCOUNT_MACROS)
@@ -152,17 +159,12 @@ function MacroSearchMixin:fillMacroData(macroType)
 end
 
 function MacroSearchMixin:OnShow()
-	self:RegisterEvent("UPDATE_MACROS");
+	self:RegisterEvent("UPDATE_MACROS")
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	self:setFindMode(SearchMacroText)
-
-	local affectingCombat = UnitAffectingCombat("player")
-	if affectingCombat then
-		self.SearchBar:Disable()
-	else
-		self.SearchBar:Enable()
-	end
+	self.SearchBar:Enable()
+	self:fillMacroData(self.macroType)
 end
 
 function MacroSearchMixin:OnHide()
@@ -182,22 +184,25 @@ function MacroSearchMixin:repeatSearch()
 end
 
 function MacroSearchMixin:search(str)
-	self.searchString = str
+	self:fillMacroData(self.macroType)
+	self.searchString = str or ""
 	MacroFrame.Update = function() end
-
-	self.filterdMacros = _.filter(self.macros, function(macro) return self.findFn[self.findmode](macro) end)
-	
+	if _.isEmpty(self.macros) then
+		self.filterdMacros = {}
+	else
+		self.filterdMacros = _.filter(self.macros, function(macro)
+			return self.findFn[self.findmode](macro)
+		end)
+	end
 	local function MacroFrameGetMacroInfo(selectionIndex)
 		return self.filterdMacros[selectionIndex]
 	end
-
 	local function MacroFrameGetNumMacros()
-		return #self.filterdMacros
+		return _.size(self.filterdMacros)
 	end
-
-	MacroFrame.MacroSelector:SetSelectionsDataProvider(MacroFrameGetMacroInfo, MacroFrameGetNumMacros);
+	MacroFrame.MacroSelector:SetSelectionsDataProvider(MacroFrameGetMacroInfo, MacroFrameGetNumMacros)
 	MacroSearchNoSearchResultsText:SetShown(MacroFrameGetNumMacros() == 0)
-	MacroFrame:UpdateButtons();
+	MacroFrame:UpdateButtons()
 end
 
 function MacroSearchMixin:reset()
