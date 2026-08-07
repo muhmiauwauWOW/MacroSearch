@@ -33,6 +33,9 @@ local defaultSearchMacroText = false
 
 SearchMacroText = nil
 
+local MAX_ACCOUNT_MACROS =  MAX_ACCOUNT_MACROS or Constants.MacroConsts.MAX_ACCOUNT_MACROS 
+local MAX_CHARACTER_MACROS = MAX_CHARACTER_MACROS or Constants.MacroConsts.MAX_CHARACTER_MACROS
+
 
 MACROSEARCH_NO_RESULTS = QUEST_LOG_NO_RESULTS or "No Results"
 
