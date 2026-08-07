@@ -1,4 +1,4 @@
-﻿## Interface: 120007, 50504, 11508
+﻿## Interface: 120100, 120007, 50504, 11508
 ## Title: MacroSearch
 ## Notes: Adds a Searchbar to the macro frame
 ## Version: @project-version@
@@ -7,6 +7,7 @@
 ## LoadOnDemand: 1
 ## SavedVariables: SearchMacroText
 ## LoadWith: Blizzard_MacroUI
+## Dependencies: Blizzard_MacroUI
 ## X-Curse-Project-ID: 1094589
 ## X-Wago-ID: nGvprr6x
 ## X-WoWI-ID: 26832
