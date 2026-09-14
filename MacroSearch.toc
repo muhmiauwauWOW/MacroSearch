@@ -1,4 +1,4 @@
-﻿## Interface: 120100, 120007, 50504, 11508
+﻿## Interface: 120100, 50504, 11509
 ## Title: MacroSearch
 ## Notes: Adds a Searchbar to the macro frame
 ## Version: @project-version@
